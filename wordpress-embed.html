@@ -1,0 +1,1377 @@
+<!-- ==========================================================================
+     LSCD 2026–2027 CLASS CALENDAR  —  paste this whole block into a
+     WordPress "Custom HTML" block (or an Elementor HTML widget).
+
+     SETUP: put your Google Sheet ID on the SHEET_ID line inside the script
+     near the bottom of this file (search for PASTE_SHEET_ID_HERE).
+     Full instructions are in SETUP.md.
+
+     Everything here is scoped to #lscd-calendar — it cannot restyle or
+     interfere with the rest of the website.
+     ========================================================================== -->
+
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+  #lscd-calendar{
+    --lscd-blue:        #49C6FF;
+    --lscd-blue-deep:   #21AEEF;
+    --lscd-blue-wash:   #EDF9FF;
+    --lscd-ink:         #111111;
+    --lscd-body:        #4A5560;
+    --lscd-muted:       #8A939C;
+    --lscd-faint:       #B9C0C7;
+    --lscd-ground:      #FFFFFF;
+    --lscd-panel:       #F7F6F4;
+    --lscd-line:        #E9E7E3;
+    --lscd-line-soft:   #F1EFEC;
+    --lscd-closed:      #B65C50;
+    --lscd-closed-wash: #FBF1EF;
+    --lscd-oswald: 'Oswald', 'Arial Narrow', sans-serif;
+    --lscd-mont:   'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+    --lscd-script: 'Great Vibes', cursive;
+
+    max-width:1180px;
+    margin:0 auto;
+    padding:48px 40px 64px;
+    font-family:var(--lscd-mont);
+    color:var(--lscd-ink);
+    background:var(--lscd-ground);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    text-align:left;
+  }
+  #lscd-calendar *{ margin:0; padding:0; box-sizing:border-box; }
+  #lscd-calendar img{ max-width:100%; }
+  /* some themes override [hidden]; make sure hidden panels really hide */
+  #lscd-calendar [hidden]{ display:none !important; }
+  /* neutralise the element styles WordPress themes most often set globally,
+     so the embed looks the same no matter what theme it lands in */
+  #lscd-calendar h1, #lscd-calendar h2, #lscd-calendar h3,
+  #lscd-calendar p, #lscd-calendar span, #lscd-calendar div,
+  #lscd-calendar table, #lscd-calendar thead, #lscd-calendar tbody,
+  #lscd-calendar tr, #lscd-calendar th, #lscd-calendar td,
+  #lscd-calendar button, #lscd-calendar strong, #lscd-calendar em,
+  #lscd-calendar small, #lscd-calendar hr{
+    font-family:inherit;
+    color:inherit;
+    background:none;
+    border:none;
+    border-radius:0;
+    box-shadow:none;
+    text-shadow:none;
+    letter-spacing:normal;
+    text-transform:none;
+    float:none;
+    width:auto;
+  }
+  #lscd-calendar table{ width:100%; }
+
+  /* ---------------------------------------------------------------- header */
+  #lscd-calendar .cal-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:32px;
+    margin-bottom:40px;
+  }
+  #lscd-calendar .cal-head-script{
+    font-family:var(--lscd-script);
+    font-size:30px;
+    line-height:1;
+    color:var(--lscd-blue);
+    margin-bottom:10px;
+  }
+  #lscd-calendar .cal-title{
+    font-family:var(--lscd-oswald);
+    font-weight:600;
+    font-size:clamp(30px, 4vw, 44px);
+    letter-spacing:.5px;
+    line-height:1.05;
+    text-transform:uppercase;
+    color:var(--lscd-ink);
+  }
+  #lscd-calendar .cal-season{
+    text-align:right;
+    flex-shrink:0;
+    padding-bottom:6px;
+  }
+  #lscd-calendar .cal-season-label{
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--lscd-muted);
+  }
+  #lscd-calendar .cal-season-motto{
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--lscd-ink);
+    margin-top:4px;
+  }
+  #lscd-calendar .cal-season-motto em{
+    font-style:normal;
+    color:var(--lscd-blue-deep);
+  }
+
+  /* ------------------------------------------------------------- main tabs */
+  #lscd-calendar .cal-tabs{
+    display:flex;
+    gap:36px;
+    border-bottom:1px solid var(--lscd-line);
+    margin-bottom:44px;
+  }
+  #lscd-calendar .cal-tab{
+    font-family:var(--lscd-oswald);
+    font-weight:500;
+    font-size:15px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--lscd-muted);
+    background:none;
+    border:none;
+    border-bottom:2px solid transparent;
+    border-radius:0;
+    padding:10px 2px 14px;
+    margin-bottom:-1px;
+    cursor:pointer;
+    white-space:nowrap;
+    text-shadow:none;
+    box-shadow:none;
+    transition:color .22s ease, border-color .22s ease;
+  }
+  #lscd-calendar .cal-tab:hover{ color:var(--lscd-ink); background:none; }
+  #lscd-calendar .cal-tab[aria-selected="true"]{
+    color:var(--lscd-ink);
+    border-bottom-color:var(--lscd-blue);
+  }
+
+  /* ----------------------------------------------------------- section head */
+  #lscd-calendar .section-head{ margin-bottom:22px; }
+  #lscd-calendar .section-kicker{
+    font-family:var(--lscd-oswald);
+    font-weight:500;
+    font-size:10.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--lscd-blue-deep);
+    margin-bottom:6px;
+  }
+  #lscd-calendar .section-head h2{
+    font-family:var(--lscd-oswald);
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--lscd-ink);
+  }
+  #lscd-calendar .section-divider{
+    border:none;
+    border-top:1px solid var(--lscd-line);
+    margin:56px 0 44px;
+    height:0;
+    background:none;
+  }
+
+  /* ------------------------------------------------- studio × day schedule */
+  #lscd-calendar .studio-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    border:1px solid var(--lscd-line);
+    border-radius:8px;
+    box-shadow:0 16px 40px -24px rgba(17,17,17,.10);
+    background:var(--lscd-ground);
+  }
+  #lscd-calendar table.studio-table{
+    width:100%;
+    min-width:940px;
+    border-collapse:collapse;
+    border-spacing:0;
+    background:var(--lscd-ground);
+    font-size:inherit;
+    margin:0;
+  }
+  #lscd-calendar .studio-table thead th{
+    background:var(--lscd-blue);
+    color:#fff;
+    font-family:var(--lscd-oswald);
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:13px 10px;
+    text-align:center;
+    border:none;
+    border-left:1px solid rgba(255,255,255,.28);
+  }
+  #lscd-calendar .studio-table thead th:first-child{
+    background:var(--lscd-panel);
+    border-left:none;
+  }
+  #lscd-calendar .studio-table tbody th.studio-label{
+    background:var(--lscd-panel);
+    color:var(--lscd-ink);
+    font-family:var(--lscd-oswald);
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    text-align:left;
+    vertical-align:top;
+    padding:16px 14px;
+    white-space:nowrap;
+    border:none;
+    border-top:1px solid var(--lscd-line);
+  }
+  #lscd-calendar .studio-table tbody td{
+    padding:14px 12px;
+    vertical-align:top;
+    background:var(--lscd-ground);
+    border:none;
+    border-top:1px solid var(--lscd-line);
+    border-left:1px solid var(--lscd-line-soft);
+    min-width:140px;
+    /* themes commonly style bare td/th — restate these so nothing leaks in */
+    color:var(--lscd-ink);
+    font-family:var(--lscd-mont);
+    font-size:12.5px;
+    font-weight:400;
+    line-height:1.55;
+    text-align:left;
+    text-transform:none;
+  }
+  #lscd-calendar .studio-table tbody tr:first-child th,
+  #lscd-calendar .studio-table tbody tr:first-child td{ border-top:none; }
+
+  #lscd-calendar .se-entry{
+    opacity:0;
+    transform:translateY(4px);
+    animation:lscdRowIn .35s ease forwards;
+  }
+  #lscd-calendar .se-entry + .se-entry{
+    margin-top:11px;
+    padding-top:11px;
+    border-top:1px solid var(--lscd-line-soft);
+  }
+  #lscd-calendar .se-name{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--lscd-ink);
+    line-height:1.3;
+  }
+  #lscd-calendar .se-name .badge-new{ font-size:7px; padding:2px 5px 1px; margin-left:5px; vertical-align:1px; }
+  #lscd-calendar .se-meta{
+    font-size:10.5px;
+    color:var(--lscd-muted);
+    margin-top:3px;
+    line-height:1.45;
+  }
+  #lscd-calendar .se-meta .note{
+    font-style:italic;
+    display:block;
+    margin-top:2px;
+  }
+
+  @keyframes lscdRowIn{ to{ opacity:1; transform:translateY(0); } }
+
+  /* --------------------------------------------------------------- day rail */
+  #lscd-calendar .day-rail{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:26px;
+  }
+  #lscd-calendar .day-btn{
+    font-family:var(--lscd-oswald);
+    font-weight:500;
+    font-size:13px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--lscd-body);
+    background:var(--lscd-ground);
+    border:1px solid var(--lscd-line);
+    border-radius:0;
+    padding:9px 20px;
+    cursor:pointer;
+    text-shadow:none;
+    box-shadow:none;
+    transition:all .2s ease;
+  }
+  #lscd-calendar .day-btn:hover{ border-color:var(--lscd-faint); color:var(--lscd-ink); background:var(--lscd-ground); }
+  #lscd-calendar .day-btn[aria-pressed="true"]{
+    background:var(--lscd-ink);
+    border-color:var(--lscd-ink);
+    color:#fff;
+  }
+
+  /* --------------------------------------------------------------- day list */
+  #lscd-calendar .day-title{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin:0 0 18px;
+  }
+  #lscd-calendar .day-title h3{
+    font-family:var(--lscd-oswald);
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--lscd-ink);
+  }
+  #lscd-calendar .day-title .count{
+    font-size:12px;
+    font-weight:500;
+    color:var(--lscd-muted);
+  }
+
+  #lscd-calendar .class-list{ border-top:1px solid var(--lscd-line); }
+  #lscd-calendar .class-row{
+    display:grid;
+    grid-template-columns: 172px 1fr auto;
+    align-items:center;
+    gap:24px;
+    padding:18px 8px;
+    border-bottom:1px solid var(--lscd-line-soft);
+    opacity:0;
+    transform:translateY(8px);
+    animation:lscdRowIn .45s ease forwards;
+  }
+  #lscd-calendar .class-row:hover{ background:linear-gradient(90deg, var(--lscd-panel), transparent 70%); }
+
+  #lscd-calendar .class-time{
+    font-size:13.5px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--lscd-ink);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  #lscd-calendar .class-time span{ color:var(--lscd-faint); font-weight:400; padding:0 3px; }
+
+  #lscd-calendar .class-main{ min-width:0; }
+  #lscd-calendar .class-name{
+    font-size:15.5px;
+    font-weight:600;
+    color:var(--lscd-ink);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  #lscd-calendar .badge-new{
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.16em;
+    color:#fff;
+    background:var(--lscd-blue);
+    padding:3px 8px 2px;
+    border-radius:3px;
+    text-transform:uppercase;
+    display:inline-block;
+  }
+  #lscd-calendar .class-meta{
+    font-size:12.5px;
+    color:var(--lscd-muted);
+    margin-top:3px;
+  }
+  #lscd-calendar .class-meta .sep{ padding:0 7px; color:var(--lscd-faint); }
+  #lscd-calendar .class-meta .note{ font-style:italic; }
+
+  #lscd-calendar .class-side{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+  #lscd-calendar .tag-style{
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--lscd-body);
+    background:var(--lscd-panel);
+    padding:5px 11px;
+    border-radius:3px;
+    white-space:nowrap;
+  }
+  #lscd-calendar .tag-studio{
+    font-family:var(--lscd-oswald);
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:.05em;
+    color:var(--lscd-ink);
+    border:1px solid var(--lscd-line);
+    width:34px; height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:3px;
+  }
+
+  #lscd-calendar .empty-day{
+    padding:64px 20px;
+    text-align:center;
+    border-bottom:1px solid var(--lscd-line-soft);
+  }
+  #lscd-calendar .empty-day .script{
+    font-family:var(--lscd-script);
+    font-size:34px;
+    color:var(--lscd-faint);
+    display:block;
+    margin-bottom:6px;
+  }
+  #lscd-calendar .empty-day p{ font-size:13px; color:var(--lscd-muted); }
+
+  /* ------------------------------------------------------------- year view */
+  #lscd-calendar .year-controls{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    margin-bottom:8px;
+  }
+  #lscd-calendar .month-nav{
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  #lscd-calendar .month-nav-label{
+    font-family:var(--lscd-oswald);
+    font-weight:600;
+    font-size:19px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    min-width:200px;
+    text-align:center;
+    font-variant-numeric:tabular-nums;
+    color:var(--lscd-ink);
+  }
+  #lscd-calendar .month-nav-label small{
+    font-family:var(--lscd-mont);
+    font-weight:500;
+    font-size:10px;
+    letter-spacing:.18em;
+    color:var(--lscd-muted);
+    display:block;
+    margin-top:1px;
+  }
+  #lscd-calendar .nav-arrow{
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--lscd-ground);
+    border:1px solid var(--lscd-line);
+    border-radius:0;
+    color:var(--lscd-ink);
+    cursor:pointer;
+    box-shadow:none;
+    transition:all .18s ease;
+  }
+  #lscd-calendar .nav-arrow:hover:not(:disabled){ border-color:var(--lscd-ink); background:var(--lscd-ground); }
+  #lscd-calendar .nav-arrow:disabled{ opacity:.3; cursor:default; }
+  #lscd-calendar .nav-arrow svg{ width:14px; height:14px; display:block; }
+
+  #lscd-calendar .year-note{
+    font-size:12.5px;
+    color:var(--lscd-muted);
+    margin:6px 0 22px;
+  }
+
+  #lscd-calendar .mg{
+    border:1px solid var(--lscd-line);
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 16px 40px -24px rgba(17,17,17,.10);
+    animation:lscdRowIn .45s ease forwards;
+    opacity:0;
+    transform:translateY(8px);
+  }
+  #lscd-calendar .mg-head{
+    display:grid;
+    grid-template-columns:repeat(7, minmax(0,1fr));
+    background:var(--lscd-panel);
+    border-bottom:1px solid var(--lscd-line);
+  }
+  #lscd-calendar .mg-head div{
+    font-family:var(--lscd-oswald);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--lscd-body);
+    text-align:center;
+    padding:10px 4px;
+  }
+  #lscd-calendar .mg-body{
+    display:grid;
+    grid-template-columns:repeat(7, minmax(0,1fr));
+  }
+  #lscd-calendar .mg-cell{
+    min-height:96px;
+    padding:8px 8px 10px;
+    border-top:1px solid var(--lscd-line-soft);
+    border-left:1px solid var(--lscd-line-soft);
+    background:var(--lscd-ground);
+    position:relative;
+  }
+  #lscd-calendar .mg-body .mg-cell:nth-child(-n+7){ border-top:none; }
+  #lscd-calendar .mg-body .mg-cell:nth-child(7n+1){ border-left:none; }
+  #lscd-calendar .mg-cell.is-out{ background:var(--lscd-panel); }
+  #lscd-calendar .mg-cell.is-closed{ background:var(--lscd-closed-wash); }
+  #lscd-calendar .mg-cell.is-event{ background:var(--lscd-blue-wash); }
+  #lscd-calendar .mg-daynum{
+    font-size:12px;
+    font-weight:600;
+    color:var(--lscd-ink);
+    font-variant-numeric:tabular-nums;
+    width:24px; height:24px;
+    display:inline-flex; align-items:center; justify-content:center;
+    border-radius:50%;
+    margin:-2px 0 4px -4px;
+  }
+  #lscd-calendar .is-out .mg-daynum{ color:var(--lscd-faint); font-weight:500; }
+  #lscd-calendar .is-closed .mg-daynum{ color:var(--lscd-closed); }
+  #lscd-calendar .mg-daynum.is-today{
+    background:var(--lscd-ink);
+    color:#fff;
+  }
+  #lscd-calendar .mg-chip{
+    display:block;
+    font-size:10.5px;
+    font-weight:600;
+    line-height:1.3;
+    color:var(--lscd-ink);
+    background:var(--lscd-ground);
+    border:1px solid var(--lscd-line);
+    border-left:3px solid var(--lscd-blue);
+    border-radius:3px;
+    padding:4px 7px;
+    margin-top:3px;
+  }
+  #lscd-calendar .mg-chip.is-closed-chip{
+    border-left-color:var(--lscd-closed);
+    color:var(--lscd-closed);
+  }
+  #lscd-calendar .mg-chip small{
+    display:block;
+    font-weight:500;
+    font-size:9.5px;
+    color:var(--lscd-muted);
+    margin-top:1px;
+  }
+  #lscd-calendar .mg-dots{ display:none; margin-top:2px; gap:3px; }
+  #lscd-calendar .mg-dot{
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--lscd-blue);
+  }
+  #lscd-calendar .mg-dot.is-closed-dot{ background:var(--lscd-closed); }
+
+  #lscd-calendar .mg-extra{ margin-top:18px; }
+  #lscd-calendar .mg-extra .event-row{ border:1px solid var(--lscd-line-soft); }
+  #lscd-calendar .mg-list{ display:none; margin-top:18px; }
+
+  #lscd-calendar .event-row{
+    display:grid;
+    grid-template-columns:128px 1fr;
+    gap:20px;
+    padding:13px 14px;
+    border-radius:6px;
+    align-items:baseline;
+  }
+  #lscd-calendar .event-row + .event-row{ margin-top:4px; }
+  #lscd-calendar .event-row.is-closed{ background:var(--lscd-closed-wash); }
+  #lscd-calendar .event-date{
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:var(--lscd-ink);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  #lscd-calendar .is-closed .event-date{ color:var(--lscd-closed); }
+  #lscd-calendar .event-body .event-title{
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--lscd-ink);
+  }
+  #lscd-calendar .tag-closed{
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--lscd-closed);
+    border:1px solid currentColor;
+    padding:2px 8px 1px;
+    border-radius:3px;
+    margin-left:10px;
+    vertical-align:2px;
+    white-space:nowrap;
+    display:inline-block;
+  }
+  #lscd-calendar .event-place{
+    font-size:12.5px;
+    color:var(--lscd-body);
+    margin-top:2px;
+  }
+  #lscd-calendar .event-note{
+    font-size:12px;
+    font-style:italic;
+    color:var(--lscd-muted);
+    margin-top:5px;
+    max-width:560px;
+  }
+
+  /* --------------------------------------------------------------- footer */
+  #lscd-calendar .cal-foot{
+    margin-top:56px;
+    padding-top:22px;
+    border-top:1px solid var(--lscd-line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  #lscd-calendar .cal-foot p{
+    font-size:11px;
+    letter-spacing:.06em;
+    color:var(--lscd-muted);
+  }
+  #lscd-calendar .cal-foot .foot-script{
+    font-family:var(--lscd-script);
+    font-size:23px;
+    color:var(--lscd-faint);
+  }
+
+  /* ------------------------------------------------------------ responsive */
+  @media (max-width: 860px){
+    #lscd-calendar{ padding:36px 20px 48px; }
+    #lscd-calendar .cal-head{ flex-direction:column; align-items:flex-start; gap:14px; margin-bottom:32px; }
+    #lscd-calendar .cal-season{ text-align:left; }
+    #lscd-calendar .cal-tabs{ gap:24px; overflow-x:auto; }
+    #lscd-calendar .section-divider{ margin:44px 0 36px; }
+  }
+  @media (max-width: 620px){
+    #lscd-calendar{ padding:28px 14px 40px; }
+    #lscd-calendar .cal-head-script{ font-size:26px; }
+    #lscd-calendar .class-row{
+      grid-template-columns:1fr;
+      gap:6px;
+      padding:16px 4px;
+    }
+    #lscd-calendar .class-side{ gap:8px; }
+    #lscd-calendar .tag-studio{ width:auto; height:auto; padding:4px 9px; font-size:10.5px; }
+    #lscd-calendar .event-row{ grid-template-columns:1fr; gap:2px; padding:12px 10px; }
+    #lscd-calendar .day-btn{ padding:8px 14px; font-size:12px; }
+    #lscd-calendar .mg-cell{ min-height:52px; padding:5px 4px 6px; }
+    #lscd-calendar .mg-chip{ display:none; }
+    #lscd-calendar .mg-dots{ display:flex; }
+    #lscd-calendar .mg-daynum{ width:22px; height:22px; font-size:11px; margin:0 0 2px 0; }
+    #lscd-calendar .mg-list{ display:block; }
+    #lscd-calendar .month-nav{ width:100%; justify-content:space-between; }
+    #lscd-calendar .month-nav-label{ min-width:0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #lscd-calendar *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
+    #lscd-calendar .class-row,
+    #lscd-calendar .se-entry,
+    #lscd-calendar .mg,
+    #lscd-calendar .event-row{ opacity:1; transform:none; }
+  }
+</style>
+
+<div id="lscd-calendar">
+
+  <header class="cal-head">
+    <div>
+      <div class="cal-head-script">Laredo School of Contemporary Dance</div>
+      <h1 class="cal-title">2026–2027 Class Calendar</h1>
+    </div>
+    <div class="cal-season">
+      <div class="cal-season-label">Season <span class="lscd-season-num"></span></div>
+      <div class="cal-season-motto lscd-season-motto"></div>
+    </div>
+  </header>
+
+  <div class="cal-tabs" role="tablist" aria-label="Calendar views">
+    <button class="cal-tab lscd-tab" data-tab="weekly" role="tab" aria-selected="true">Weekly Calendar</button>
+    <button class="cal-tab lscd-tab" data-tab="year" role="tab" aria-selected="false">School Year Calendar</button>
+  </div>
+
+  <!-- ====================== WEEKLY PANEL ====================== -->
+  <section class="lscd-panel-weekly" role="tabpanel">
+
+    <div class="section-head">
+      <div class="section-kicker">Every Studio · Every Day</div>
+      <h2>This Week At A Glance</h2>
+    </div>
+    <div class="lscd-glance-body"></div>
+
+    <hr class="section-divider">
+
+    <div class="section-head">
+      <div class="section-kicker">Looking For One Day?</div>
+      <h2>Browse By Day</h2>
+    </div>
+    <div class="day-rail lscd-day-rail"></div>
+    <div class="lscd-day-body"></div>
+  </section>
+
+  <!-- ======================= YEAR PANEL ======================= -->
+  <section class="lscd-panel-year" role="tabpanel" hidden>
+    <div class="section-head">
+      <div class="section-kicker">Aug 2026 – May 2027</div>
+      <h2>School Year Calendar</h2>
+    </div>
+    <div class="year-controls">
+      <div class="month-nav">
+        <button class="nav-arrow lscd-nav-prev" aria-label="Previous month">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="month-nav-label lscd-month-label"></div>
+        <button class="nav-arrow lscd-nav-next" aria-label="Next month">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="year-note">Shaded red dates are studio closures — no classes held. Blue dates are events.</p>
+    <div class="lscd-year-body"></div>
+  </section>
+
+  <footer class="cal-foot">
+    <p>SCHEDULE SUBJECT TO CHANGE &nbsp;·&nbsp; QUESTIONS? CALL <strong>(956)&nbsp;220-1532</strong></p>
+    <span class="foot-script">Dance with Us. Grow with Us.</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ======================================================================
+     SETUP — the only line you need to change
+     ----------------------------------------------------------------------
+     Replace PASTE_SHEET_ID_HERE with your Google Sheet's ID. The ID is the
+     long code in the middle of the sheet's web address:
+
+     docs.google.com/spreadsheets/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/edit
+                                    ^------------ this part ------------^
+
+     The Sheet must have two tabs named exactly "Classes" and "Events",
+     and be shared as "Anyone with the link -> Viewer".
+     Until that's done, the calendar shows the built-in schedule below.
+     ====================================================================== */
+  var SHEET_ID    = "PASTE_SHEET_ID_HERE";
+  var CLASSES_TAB = "Classes";
+  var EVENTS_TAB  = "Events";
+
+  var SEASON = { number: 16, name: "RISE", motto: "Rise Higher. Rise Together." };
+
+  /* ======================================================================
+     BUILT-IN SCHEDULE (safety net)
+     ----------------------------------------------------------------------
+     If the Google Sheet is ever unreachable, renamed, or emptied, the
+     calendar quietly shows this instead of breaking or going blank.
+     Worth refreshing once a year so the safety net stays current.
+     ====================================================================== */
+  var FALLBACK_SCHEDULE = [
+    { day:"Mon", start:17.25, end:18.25, name:"Pre-Ballet 3", ages:"ages 9–10", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Mon", start:18.5, end:19.5, name:"Modern/Horton 1", ages:"", teacher:"Jess", studio:"A", style:"Contemporary", note:"by admission only" },
+    { day:"Mon", start:19.5, end:20.75, name:"Grade 3–4 & Pointe 3/4", ages:"", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Mon", start:20.75, end:22, name:"SR Ballet Pre-Prof", ages:"", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Mon", start:17.5, end:18.25, name:"Tiny Movers", ages:"ages 3–4", teacher:"Alyssa", studio:"B", style:"Ballet" },
+    { day:"Mon", start:18.25, end:19.25, name:"Pre-Ballet 2", ages:"ages 8–9", teacher:"Silvie", studio:"B", style:"Ballet" },
+    { day:"Mon", start:17.25, end:18, name:"Pre-Hip Hop 1", ages:"ages 5–7", teacher:"Emma G", studio:"C", style:"Hip Hop" },
+    { day:"Mon", start:18.25, end:19.5, name:"GRÜV 956 Rehearsal", ages:"", teacher:"Juan", studio:"C", style:"Company" },
+    { day:"Mon", start:20.75, end:22, name:"NFS CRÜ Rehearsal", ages:"", teacher:"Juan", studio:"C", style:"Company" },
+    { day:"Mon", start:17.25, end:18.25, name:"Pre-Ballet 1", ages:"ages 5–7", teacher:"Dani", studio:"D", style:"Ballet", isNew:true },
+    { day:"Mon", start:18.25, end:19.25, name:"Pre-Hip Hop 3", ages:"ages 9–10", teacher:"Melody", studio:"D", style:"Hip Hop" },
+    { day:"Mon", start:19.5, end:20.75, name:"Teen Hip Hop 1/2", ages:"", teacher:"Juan", studio:"D", style:"Hip Hop" },
+    { day:"Tue", start:17, end:17.5, name:"Tiny Tots", ages:"ages 18–35 mos", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Tue", start:17.5, end:18.5, name:"Preparatory Grade 1", ages:"", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Tue", start:18.5, end:19.5, name:"Teen/Adult Ballet 1", ages:"", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Tue", start:19.5, end:20.75, name:"Grade 2 & Pointe 2", ages:"", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Tue", start:20.75, end:22, name:"Horton 2/3", ages:"", teacher:"Jess", studio:"A", style:"Contemporary" },
+    { day:"Tue", start:17.5, end:18.25, name:"Tiny Movers", ages:"ages 3–4", teacher:"Alyssa / Silvie", studio:"B", style:"Ballet" },
+    { day:"Tue", start:18, end:19, name:"Pre-Ballet 1", ages:"ages 5–7", teacher:"Dani", studio:"C", style:"Ballet" },
+    { day:"Tue", start:19, end:20, name:"Youth Ballet 2B", ages:"", teacher:"Dani", studio:"C", style:"Ballet" },
+    { day:"Tue", start:20, end:21, name:"Youth Hip Hop 2A/2B", ages:"", teacher:"Juan", studio:"C", style:"Hip Hop" },
+    { day:"Tue", start:18.5, end:19.5, name:"Pre-Turns & Leaps", ages:"ages 8–11", teacher:"Margaret / Marlene", studio:"D", style:"Turns & Leaps" },
+    { day:"Tue", start:18.5, end:19.75, name:"Youth Hip Hop 1A/1B", ages:"", teacher:"Juan", studio:"D", style:"Hip Hop" },
+    { day:"Tue", start:20, end:21.25, name:"JR Drill Co Rehearsal", ages:"", teacher:"Dani", studio:"D", style:"Company" },
+    { day:"Wed", start:17.25, end:18.25, name:"Youth Cont. Jazz 1A/1B", ages:"ages 11–13", teacher:"Jess", studio:"A", style:"Jazz" },
+    { day:"Wed", start:18.25, end:19.5, name:"Teen/Adult Cont. Jazz 1A/1B", ages:"", teacher:"Jess", studio:"A", style:"Jazz" },
+    { day:"Wed", start:19.5, end:20.75, name:"Teen/Adult Cont. Jazz 2/3", ages:"", teacher:"Jess", studio:"A", style:"Jazz" },
+    { day:"Wed", start:20.75, end:22, name:"SR Jazz & Contemporary Pre-Prof", ages:"", teacher:"Jess", studio:"A", style:"Jazz" },
+    { day:"Wed", start:17.5, end:18.25, name:"Baby Jazz", ages:"ages 3–4", teacher:"Margaret", studio:"B", style:"Jazz" },
+    { day:"Wed", start:18.25, end:19, name:"Pre-Jazz 1", ages:"ages 5–7", teacher:"Marlene", studio:"B", style:"Jazz" },
+    { day:"Wed", start:17.25, end:18.25, name:"Pre-Jazz 3", ages:"ages 9–10", teacher:"Dani", studio:"C", style:"Jazz" },
+    { day:"Wed", start:18.25, end:19.25, name:"Pre-Jazz 2", ages:"ages 8–9", teacher:"Margaret", studio:"C", style:"Jazz" },
+    { day:"Wed", start:19.5, end:20.75, name:"Lil Blaze Rehearsal", ages:"", teacher:"Juan", studio:"C", style:"Company" },
+    { day:"Wed", start:18.25, end:19.5, name:"Youth Jazz 2A", ages:"", teacher:"Dani", studio:"D", style:"Jazz" },
+    { day:"Wed", start:19.5, end:20.75, name:"Youth Jazz 2B", ages:"", teacher:"Dani", studio:"D", style:"Jazz" },
+    { day:"Wed", start:20.75, end:21.75, name:"JR Drill Co Technique", ages:"", teacher:"Dani", studio:"D", style:"Company" },
+    { day:"Thu", start:17.25, end:18.25, name:"Youth Ballet 1A/1B", ages:"ages 11–13", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Thu", start:18.25, end:19.5, name:"Preparatory Grade 2 / Grade 1 & Pointe 1", ages:"", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Thu", start:19.5, end:20.5, name:"Teen/Adult Ballet 2/3", ages:"", teacher:"Jess", studio:"A", style:"Ballet" },
+    { day:"Thu", start:17.5, end:18.25, name:"Pre-Jazz 1", ages:"ages 5–7", teacher:"Vale", studio:"B", style:"Jazz" },
+    { day:"Thu", start:18.25, end:19.25, name:"Pre-Hip Hop 2", ages:"ages 8–9", teacher:"Melody", studio:"B", style:"Hip Hop" },
+    { day:"Thu", start:19.25, end:20.25, name:"Boys Hip Hop", ages:"ages 9–13", teacher:"Juan", studio:"B", style:"Hip Hop", isNew:true },
+    { day:"Thu", start:17.5, end:18.5, name:"Pre-Ballet 1", ages:"ages 5–7", teacher:"Dani", studio:"C", style:"Ballet" },
+    { day:"Thu", start:18.5, end:19.5, name:"Youth Ballet 2A", ages:"", teacher:"Dani / Vale", studio:"C", style:"Ballet" },
+    { day:"Thu", start:20.5, end:21.5, name:"Jazz Funk", ages:"ages 15+", teacher:"Juan", studio:"C", style:"Jazz" },
+    { day:"Thu", start:17.25, end:18, name:"Pre-Hip Hop 1", ages:"ages 5–7", teacher:"Emma G", studio:"D", style:"Hip Hop", isNew:true },
+    { day:"Thu", start:18.25, end:19.25, name:"Sculpt & Stretch", ages:"ages 18+", teacher:"Frenchie", studio:"D", style:"Fitness", isNew:true },
+    { day:"Thu", start:19.5, end:20.5, name:"Youth Turns & Leaps", ages:"", teacher:"Dani", studio:"D", style:"Turns & Leaps", note:"must meet pre-reqs" },
+    { day:"Fri", start:16.75, end:18.25, name:"JR Ballet/Jazz Pre-Prof Rehearsal", ages:"", teacher:"Jess", studio:"D", style:"Company" },
+    { day:"Fri", start:18.25, end:19.5, name:"INT Ballet Pre-Prof Rehearsal", ages:"", teacher:"Jess", studio:"D", style:"Company" },
+    { day:"Fri", start:19.5, end:20.75, name:"INT Jazz & Contemporary Pre-Prof", ages:"", teacher:"Jess", studio:"D", style:"Company" },
+    { day:"Sat", start:10, end:10.75, name:"Tiny Movers", ages:"ages 3–4", teacher:"Silvie", studio:"A", style:"Ballet" },
+    { day:"Sat", start:11, end:12, name:"Youth Modern/Contemporary", ages:"ages 9–12", teacher:"Dani", studio:"A", style:"Contemporary" },
+    { day:"Sat", start:12, end:13, name:"Pre-Ballet 1", ages:"ages 5–7", teacher:"Alyssa", studio:"A", style:"Ballet" },
+    { day:"Sat", start:13, end:14, name:"Teen Beginner Turns & Leaps", ages:"", teacher:"Dani", studio:"A", style:"Turns & Leaps" },
+    { day:"Sat", start:10, end:10.75, name:"Tumbling", ages:"ages 3–4", teacher:"Alexis", studio:"B", style:"Tumbling" },
+    { day:"Sat", start:11, end:11.75, name:"Tumbling", ages:"ages 5–7", teacher:"Alexis", studio:"B", style:"Tumbling" },
+    { day:"Sat", start:12, end:12.75, name:"Tumbling", ages:"ages 8–10", teacher:"Alexis", studio:"B", style:"Tumbling" },
+    { day:"Sat", start:13, end:13.75, name:"Tumbling", ages:"ages 11–18", teacher:"Alexis", studio:"B", style:"Tumbling" },
+    { day:"Sat", start:10, end:11, name:"Mat Pilates", ages:"", teacher:"Frenchie", studio:"C", style:"Fitness", isNew:true },
+    { day:"Sat", start:11, end:12, name:"Pre-Ballet 2", ages:"ages 8–9", teacher:"Silvie", studio:"C", style:"Ballet" },
+    { day:"Sat", start:12, end:13, name:"Youth Ballet 1A/1B", ages:"", teacher:"Silvie", studio:"C", style:"Ballet" },
+    { day:"Sat", start:10, end:10.833, name:"Strength & Flexibility", ages:"ages 9+", teacher:"", studio:"D", style:"Fitness" },
+    { day:"Sat", start:11, end:12, name:"Youth Lyrical/Contemporary", ages:"", teacher:"Jess", studio:"D", style:"Contemporary", note:"by admission only" },
+    { day:"Sat", start:12, end:13, name:"Teen/Adult Lyrical/Contemporary", ages:"", teacher:"Jess", studio:"D", style:"Contemporary", note:"by admission only" },
+    { day:"Sat", start:13, end:14, name:"Teen Int/Adv Turns & Leaps", ages:"", teacher:"Jess", studio:"D", style:"Turns & Leaps", note:"must meet pre-reqs" }
+  ];
+
+  var FALLBACK_EVENTS = [
+    { month:"August 2026", date:"Aug 15", from:"2026-08-15", title:"Back 2 Dance Event" },
+    { month:"August 2026", date:"Aug 18", from:"2026-08-18", title:"First Day of Classes @ LSCD" },
+    { month:"August 2026", date:"Aug 30", from:"2026-08-30", title:"Nutcracker Auditions" },
+    { month:"September 2026", date:"Sep 7", from:"2026-09-07", title:"Labor Day", closed:true },
+    { month:"October 2026", date:"Oct 26–30", from:"2026-10-26", to:"2026-10-30", title:"LSCD Spirit Week" },
+    { month:"October 2026", date:"Oct 31", from:"2026-10-31", title:"Halloween", closed:true },
+    { month:"November 2026", date:"Nov 23–28", from:"2026-11-23", to:"2026-11-28", title:"Thanksgiving Break", closed:true },
+    { month:"December 2026", date:"Dec 12", from:"2026-12-12", title:"Nutcracker Tea Party", place:"Laredo Country Club" },
+    { month:"December 2026", date:"Dec 14", from:"2026-12-14", title:"Sensory-Friendly Nutcracker Show for LISD & UISD", place:"LISD Performing Arts Center" },
+    { month:"December 2026", date:"Dec 18", from:"2026-12-18", title:"$60 Production Fee Due — 16th Annual Dance Showcase", note:"If your child will not be participating in the showcase, you must notify us before the 18th to avoid automatic payment." },
+    { month:"December 2026", date:"Dec 20 – Jan 5", from:"2026-12-20", to:"2027-01-05", title:"Christmas & New Year's Break", closed:true },
+    { month:"January 2027", date:"Jan 6", from:"2027-01-06", title:"Classes Resume @ LSCD" },
+    { month:"February 2027", date:"Feb 8–13", from:"2027-02-08", to:"2027-02-13", title:"Love is in the Air Week" },
+    { month:"March 2027", date:"Mar 8–13", from:"2027-03-08", to:"2027-03-13", title:"Spring Break", closed:true },
+    { month:"March 2027", date:"Mar 26", from:"2027-03-26", title:"Father Daughter Dance", note:"Tentative date." },
+    { month:"March 2027", date:"Mar 26–28", from:"2027-03-26", to:"2027-03-28", title:"Good Friday & Easter Holiday", closed:true },
+    { month:"March 2027", date:"Mar 29", from:"2027-03-29", title:"Classes Resume" },
+    { month:"April 2027", date:"Apr 17", from:"2027-04-17", title:"All Costume Fees Due", note:"Costumes will be charged to the card on file. Cash payments may be given in person at the front desk." },
+    { month:"May 2027", date:"TBA", title:"16th Annual Dance Showcases", note:"Info will be provided in December/January. Last day of classes will be their showcase performance." }
+  ];
+
+  /* ====================================================================== */
+
+  var root = document.getElementById("lscd-calendar");
+  if (!root) return;
+  function $(sel){ return root.querySelector(sel); }
+
+  var SCHEDULE = FALLBACK_SCHEDULE.slice();
+  var EVENTS   = FALLBACK_EVENTS.slice();
+
+  var DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat"];
+  var DAY_FULL = { Mon:"Monday", Tue:"Tuesday", Wed:"Wednesday", Thu:"Thursday", Fri:"Friday", Sat:"Saturday" };
+  var STUDIOS = ["A","B","C","D"];
+  var MONTH_NAMES = ["January","February","March","April","May","June","July",
+                     "August","September","October","November","December"];
+
+  var SEASON_MONTHS = [];
+  (function(){
+    var y = 2026, m = 7;
+    for (var i = 0; i < 10; i++){
+      SEASON_MONTHS.push({ y: y, m: m });
+      m++; if (m > 11){ m = 0; y++; }
+    }
+  })();
+
+  function defaultMonthIndex(){
+    var now = new Date();
+    for (var i = 0; i < SEASON_MONTHS.length; i++){
+      if (SEASON_MONTHS[i].y === now.getFullYear() && SEASON_MONTHS[i].m === now.getMonth()) return i;
+    }
+    return 0;
+  }
+  function defaultDay(){
+    var i = new Date().getDay();
+    return (i >= 1 && i <= 6) ? DAYS[i-1] : "Mon";
+  }
+
+  var state = { day: defaultDay(), monthIdx: defaultMonthIndex(), tab: "weekly" };
+
+  /* ---------------- helpers ---------------- */
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c];
+    });
+  }
+  function fmtTime(t){
+    var h = Math.floor(t), m = Math.round((t - h) * 60);
+    var h12 = ((h + 11) % 12) + 1;
+    return h12 + ":" + (m < 10 ? "0" + m : m);
+  }
+  function fmtMeridiem(t){ return t >= 12 ? "PM" : "AM"; }
+  function fmtRange(a, b){
+    var sameM = fmtMeridiem(a) === fmtMeridiem(b);
+    return fmtTime(a) + (sameM ? "" : " " + fmtMeridiem(a))
+         + "<span>–</span>" + fmtTime(b) + " " + fmtMeridiem(b);
+  }
+
+  /* ---------------- sheet loading ---------------- */
+  function parseCSV(text){
+    var rows = [], row = [], cur = "", inQ = false, i = 0;
+    text = String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    while (i < text.length){
+      var ch = text.charAt(i);
+      if (inQ){
+        if (ch === '"'){
+          if (text.charAt(i+1) === '"'){ cur += '"'; i += 2; continue; }
+          inQ = false; i++; continue;
+        }
+        cur += ch; i++; continue;
+      }
+      if (ch === '"'){ inQ = true; i++; continue; }
+      if (ch === ','){ row.push(cur); cur = ""; i++; continue; }
+      if (ch === '\n'){ row.push(cur); rows.push(row); row = []; cur = ""; i++; continue; }
+      cur += ch; i++;
+    }
+    if (cur !== "" || row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  function norm(s){ return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+  /* Maps header names (in any order, loosely spelled) to column indexes */
+  function headerMap(headerRow, aliases){
+    var map = {}, i, key, j;
+    for (i = 0; i < headerRow.length; i++){
+      var h = norm(headerRow[i]);
+      for (key in aliases){
+        if (!aliases.hasOwnProperty(key)) continue;
+        for (j = 0; j < aliases[key].length; j++){
+          if (h === aliases[key][j] && map[key] === undefined){ map[key] = i; }
+        }
+      }
+    }
+    return map;
+  }
+
+  function cell(row, idx){
+    if (idx === undefined || idx === null) return "";
+    var v = row[idx];
+    return (v === undefined || v === null) ? "" : String(v).trim();
+  }
+
+  function truthy(v){
+    var s = norm(v);
+    return s === "yes" || s === "y" || s === "true" || s === "x" || s === "1";
+  }
+
+  /* "5:15 PM" / "5:15pm" / "17:15" / "5 PM" -> 17.25 */
+  function parseTime(raw){
+    var s = String(raw || "").trim().toLowerCase().replace(/\./g, "").replace(/\s+/g, "");
+    if (!s) return null;
+    var m = s.match(/^(\d{1,2})(?::(\d{2}))?(am|pm)?$/);
+    if (!m) return null;
+    var h = parseInt(m[1], 10);
+    var min = m[2] ? parseInt(m[2], 10) : 0;
+    var mer = m[3];
+    if (isNaN(h) || isNaN(min) || min > 59 || h > 23) return null;
+    if (mer === "pm" && h < 12) h += 12;
+    else if (mer === "am" && h === 12) h = 0;
+    else if (!mer){
+      /* No AM/PM given. The studio runs 9am–10pm, so 9/10/11 read as
+         morning and 1–8 read as evening. 13–23 are already 24-hour. */
+      if (h >= 1 && h <= 8) h += 12;
+    }
+    return h + min / 60;
+  }
+
+  function pad2(n){ return (n < 10 ? "0" : "") + n; }
+  function isoOf(y, m, d){ return y + "-" + pad2(m) + "-" + pad2(d); }
+
+  /* "2026-12-20" / "12/20/2026" / "Dec 20, 2026" -> "2026-12-20" */
+  function parseDateCell(raw){
+    var s = String(raw || "").trim();
+    if (!s) return "";
+    var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return isoOf(+m[1], +m[2], +m[3]);
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return isoOf(+m[3], +m[1], +m[2]);
+    var d = new Date(s);
+    if (!isNaN(d.getTime())) return isoOf(d.getFullYear(), d.getMonth() + 1, d.getDate());
+    return "";
+  }
+
+  function shortDate(iso){
+    var p = iso.split("-");
+    var mn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return mn[(+p[1]) - 1] + " " + (+p[2]);
+  }
+
+  var CLASS_ALIASES = {
+    day:     ["day"],
+    studio:  ["studio", "room"],
+    name:    ["class", "classname", "name", "classtitle"],
+    ages:    ["ages", "age", "agegroup"],
+    teacher: ["teacher", "instructor", "with", "staff"],
+    start:   ["start", "starttime", "from", "begins"],
+    end:     ["end", "endtime", "to", "finishes"],
+    style:   ["style", "type", "category", "discipline"],
+    isNew:   ["new", "isnew", "newclass"],
+    note:    ["note", "notes", "comment"]
+  };
+
+  var EVENT_ALIASES = {
+    title:  ["title", "event", "name", "eventname"],
+    from:   ["startdate", "start", "date", "datestart", "begins"],
+    to:     ["enddate", "end", "dateend", "finishes"],
+    date:   ["datelabel", "label", "displaydate", "dates", "datetext"],
+    month:  ["month"],
+    place:  ["location", "place", "where", "venue"],
+    note:   ["note", "notes", "comment"],
+    closed: ["noclasses", "closed", "studioclosed", "nocla"]
+  };
+
+  function rowsToClasses(rows){
+    if (!rows || rows.length < 2) return [];
+    var map = headerMap(rows[0], CLASS_ALIASES);
+    if (map.day === undefined || map.name === undefined) return [];
+    var out = [], skipped = 0;
+    for (var i = 1; i < rows.length; i++){
+      var r = rows[i];
+      if (!r || !r.join("").trim()) continue;               /* blank row */
+
+      var dayRaw = norm(cell(r, map.day)).slice(0, 3);
+      var day = { mon:"Mon", tue:"Tue", wed:"Wed", thu:"Thu", fri:"Fri", sat:"Sat" }[dayRaw];
+      var name = cell(r, map.name);
+      var start = parseTime(cell(r, map.start));
+      var end = parseTime(cell(r, map.end));
+      var studio = cell(r, map.studio).replace(/studio/ig, "").trim().toUpperCase().charAt(0);
+
+      if (!day || !name || start === null || end === null || end <= start ||
+          STUDIOS.indexOf(studio) === -1){
+        skipped++;
+        continue;                                            /* bad row: skip, keep the rest */
+      }
+
+      out.push({
+        day: day, studio: studio, name: name,
+        ages: cell(r, map.ages),
+        teacher: cell(r, map.teacher),
+        start: start, end: end,
+        style: cell(r, map.style) || "Class",
+        isNew: truthy(cell(r, map.isNew)),
+        note: cell(r, map.note)
+      });
+    }
+    if (skipped) console.warn("[LSCD calendar] Skipped " + skipped + " class row(s) that were missing a day, name, or valid start/end time.");
+    return out;
+  }
+
+  function rowsToEvents(rows){
+    if (!rows || rows.length < 2) return [];
+    var map = headerMap(rows[0], EVENT_ALIASES);
+    if (map.title === undefined) return [];
+    var out = [], skipped = 0;
+    for (var i = 1; i < rows.length; i++){
+      var r = rows[i];
+      if (!r || !r.join("").trim()) continue;
+
+      var title = cell(r, map.title);
+      if (!title){ skipped++; continue; }
+
+      var from = parseDateCell(cell(r, map.from));
+      var to   = parseDateCell(cell(r, map.to));
+      var month = cell(r, map.month);
+      var label = cell(r, map.date);
+
+      if (!month && from){
+        var p = from.split("-");
+        month = MONTH_NAMES[(+p[1]) - 1] + " " + p[0];
+      }
+      if (!label){
+        if (from && to && to !== from) label = shortDate(from) + " – " + shortDate(to);
+        else if (from) label = shortDate(from);
+        else label = "TBA";
+      }
+      if (!month){ skipped++; continue; }   /* no date and no month = nowhere to show it */
+
+      var e = { title: title, month: month, date: label };
+      if (from) e.from = from;
+      if (to && to !== from) e.to = to;
+      var place = cell(r, map.place); if (place) e.place = place;
+      var note  = cell(r, map.note);  if (note)  e.note = note;
+      if (truthy(cell(r, map.closed))) e.closed = true;
+      out.push(e);
+    }
+    if (skipped) console.warn("[LSCD calendar] Skipped " + skipped + " event row(s) missing a title or any date/month.");
+    return out;
+  }
+
+  function sheetURL(tab){
+    return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
+           "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(tab) +
+           "&nocache=" + Date.now();          /* defeats WordPress + browser caching */
+  }
+
+  function fetchCSV(tab){
+    return fetch(sheetURL(tab), { cache: "no-store" }).then(function(res){
+      if (!res.ok) throw new Error("HTTP " + res.status + " for tab " + tab);
+      return res.text();
+    }).then(parseCSV);
+  }
+
+  function loadFromSheet(){
+    if (!SHEET_ID || SHEET_ID === "PASTE_SHEET_ID_HERE"){
+      console.info("[LSCD calendar] No Google Sheet ID set — showing the built-in schedule.");
+      return;
+    }
+    if (typeof fetch !== "function") return;   /* very old browser: keep the built-in data */
+
+    Promise.all([fetchCSV(CLASSES_TAB), fetchCSV(EVENTS_TAB)])
+      .then(function(res){
+        var classes = rowsToClasses(res[0]);
+        var events  = rowsToEvents(res[1]);
+
+        /* Only take over from the built-in data if the sheet actually has
+           usable rows. An empty or broken sheet never blanks the calendar. */
+        if (classes.length){ SCHEDULE = classes; }
+        else console.warn("[LSCD calendar] Classes tab had no usable rows — keeping the built-in schedule.");
+
+        if (events.length){ EVENTS = events; }
+        else console.warn("[LSCD calendar] Events tab had no usable rows — keeping the built-in events.");
+
+        renderAll();
+      })
+      .catch(function(err){
+        console.warn("[LSCD calendar] Could not load the Google Sheet, showing the built-in schedule instead.", err);
+      });
+  }
+
+  /* ---------------- weekly: studio × day table ---------------- */
+  function entryHTML(c, i){
+    var meta = [];
+    if (c.ages)    meta.push(esc(c.ages));
+    if (c.teacher) meta.push("with " + esc(c.teacher));
+    meta.push(fmtRange(c.start, c.end));
+    var noteStr = c.note ? '<span class="note">' + esc(c.note) + '</span>' : "";
+    return '<div class="se-entry" style="animation-delay:' + Math.min(i * 30, 300) + 'ms">' +
+      '<div class="se-name">' + esc(c.name) + (c.isNew ? '<span class="badge-new">New</span>' : "") + '</div>' +
+      '<div class="se-meta">' + meta.join(" · ") + noteStr + '</div>' +
+    '</div>';
+  }
+
+  function renderGlance(){
+    var html = '<div class="studio-wrap"><table class="studio-table">' +
+      '<thead><tr><th></th>' +
+        DAYS.map(function(d){ return "<th>" + DAY_FULL[d] + "</th>"; }).join("") +
+      '</tr></thead><tbody>';
+
+    STUDIOS.forEach(function(s){
+      html += '<tr><th class="studio-label">Studio ' + s + '</th>';
+      DAYS.forEach(function(d){
+        var list = SCHEDULE
+          .filter(function(c){ return c.studio === s && c.day === d; })
+          .sort(function(a, b){ return a.start - b.start; });
+        html += '<td>' + list.map(entryHTML).join("") + '</td>';
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    $(".lscd-glance-body").innerHTML = html;
+  }
+
+  /* ---------------- weekly: single day ---------------- */
+  function classesFor(day){
+    return SCHEDULE
+      .filter(function(c){ return c.day === day; })
+      .sort(function(a, b){ return a.start - b.start || (a.studio < b.studio ? -1 : 1); });
+  }
+
+  function renderRail(){
+    $(".lscd-day-rail").innerHTML = DAYS.map(function(d){
+      return '<button class="day-btn" data-day="' + d + '" aria-pressed="' + (state.day === d) + '">' + d + '</button>';
+    }).join("");
+  }
+
+  function rowHTML(c, i){
+    var meta = [];
+    if (c.ages)    meta.push(esc(c.ages));
+    if (c.teacher) meta.push("with " + esc(c.teacher));
+    var metaStr = meta.join('<span class="sep">·</span>');
+    if (c.note) metaStr += (metaStr ? '<span class="sep">·</span>' : "") + '<span class="note">' + esc(c.note) + '</span>';
+    return '' +
+      '<div class="class-row" style="animation-delay:' + Math.min(i * 35, 420) + 'ms">' +
+        '<div class="class-time">' + fmtRange(c.start, c.end) + '</div>' +
+        '<div class="class-main">' +
+          '<div class="class-name">' + esc(c.name) + (c.isNew ? '<span class="badge-new">New</span>' : "") + '</div>' +
+          (metaStr ? '<div class="class-meta">' + metaStr + '</div>' : "") +
+        '</div>' +
+        '<div class="class-side">' +
+          '<span class="tag-style">' + esc(c.style) + '</span>' +
+          '<span class="tag-studio" title="Studio ' + esc(c.studio) + '">' + esc(c.studio) + '</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderDay(){
+    var list = classesFor(state.day);
+    var html = '<div class="day-title"><h3>' + DAY_FULL[state.day] + '</h3>'
+             + '<span class="count">' + list.length + (list.length === 1 ? " class" : " classes") + '</span></div>';
+    html += '<div class="class-list">';
+    if (list.length){
+      html += list.map(rowHTML).join("");
+    } else {
+      html += '<div class="empty-day"><span class="script">a day of rest</span>'
+           +  '<p>No classes on this day.</p></div>';
+    }
+    html += '</div>';
+    $(".lscd-day-body").innerHTML = html;
+  }
+
+  /* ---------------- year: month calendar ---------------- */
+  function parseISO(s){
+    var p = String(s).split("-");
+    return new Date(+p[0], +p[1] - 1, +p[2]);
+  }
+  function sameDate(a, b){
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+  function eventsOn(d){
+    var ts = d.getTime();
+    return EVENTS.filter(function(e){
+      if (!e.from) return false;
+      var f = parseISO(e.from).getTime();
+      var t = (e.to ? parseISO(e.to) : parseISO(e.from)).getTime();
+      return ts >= f && ts <= t;
+    });
+  }
+  function eventRowHTML(e){
+    return '<div class="event-row' + (e.closed ? " is-closed" : "") + '">' +
+      '<div class="event-date">' + esc(e.date) + '</div>' +
+      '<div class="event-body">' +
+        '<span class="event-title">' + esc(e.title) + '</span>' +
+        (e.closed ? '<span class="tag-closed">No Classes</span>' : "") +
+        (e.place ? '<div class="event-place">' + esc(e.place) + '</div>' : "") +
+        (e.note  ? '<div class="event-note">'  + esc(e.note)  + '</div>' : "") +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderMonthGrid(){
+    var mo = SEASON_MONTHS[state.monthIdx];
+    var first = new Date(mo.y, mo.m, 1);
+    var gridStart = new Date(mo.y, mo.m, 1 - first.getDay());
+    var today = new Date();
+
+    var html = '<div class="mg" role="grid" aria-label="' + MONTH_NAMES[mo.m] + ' ' + mo.y + '">';
+    html += '<div class="mg-head">' +
+      ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(function(d){ return "<div>" + d + "</div>"; }).join("") +
+      '</div><div class="mg-body">';
+
+    var monthEvents = [];
+
+    for (var i = 0; i < 42; i++){
+      var d = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
+      if (i === 35 && d.getMonth() !== mo.m) break;
+      var out = d.getMonth() !== mo.m;
+      var evs = out ? [] : eventsOn(d);
+      var closed = evs.some(function(e){ return e.closed; });
+      var open   = evs.some(function(e){ return !e.closed; });
+
+      var cls = "mg-cell" + (out ? " is-out" : "") +
+                (closed ? " is-closed" : (open ? " is-event" : ""));
+      html += '<div class="' + cls + '">';
+      html += '<span class="mg-daynum' + (!out && sameDate(d, today) ? " is-today" : "") + '">' + d.getDate() + '</span>';
+
+      if (!out && evs.length){
+        html += '<div class="mg-dots">' + evs.map(function(e){
+          return '<span class="mg-dot' + (e.closed ? " is-closed-dot" : "") + '"></span>';
+        }).join("") + '</div>';
+        evs.forEach(function(e){
+          var f = parseISO(e.from);
+          var chipDay = sameDate(d, f) || d.getDate() === 1;
+          if (chipDay){
+            html += '<span class="mg-chip' + (e.closed ? " is-closed-chip" : "") + '">' + esc(e.title) +
+                    (e.closed ? '<small>No classes</small>' : (e.place ? '<small>' + esc(e.place) + '</small>' : "")) +
+                    '</span>';
+          }
+          if (monthEvents.indexOf(e) === -1) monthEvents.push(e);
+        });
+      }
+      html += '</div>';
+    }
+    html += '</div></div>';
+
+    var label = MONTH_NAMES[mo.m] + " " + mo.y;
+    var extras = EVENTS.filter(function(e){ return !e.from && e.month === label; });
+    if (extras.length){
+      html += '<div class="mg-extra">' + extras.map(eventRowHTML).join("") + '</div>';
+    }
+    if (monthEvents.length){
+      html += '<div class="mg-list">' + monthEvents.map(eventRowHTML).join("") + '</div>';
+    }
+
+    $(".lscd-year-body").innerHTML = html;
+    $(".lscd-month-label").innerHTML = MONTH_NAMES[mo.m] + '<small>' + mo.y + '</small>';
+    $(".lscd-nav-prev").disabled = state.monthIdx === 0;
+    $(".lscd-nav-next").disabled = state.monthIdx === SEASON_MONTHS.length - 1;
+  }
+
+  /* ---------------- render everything ---------------- */
+  function renderAll(){
+    renderGlance();
+    renderRail();
+    renderDay();
+    if (state.tab === "year") renderMonthGrid();
+  }
+
+  /* ---------------- events ---------------- */
+  root.addEventListener("click", function(ev){
+    var b = ev.target.closest ? ev.target.closest("button") : null;
+    if (!b || !root.contains(b)) return;
+
+    if (b.classList.contains("lscd-tab")){
+      state.tab = b.getAttribute("data-tab");
+      var weekly = state.tab === "weekly";
+      var tabs = root.querySelectorAll(".lscd-tab");
+      for (var i = 0; i < tabs.length; i++){
+        tabs[i].setAttribute("aria-selected", tabs[i].getAttribute("data-tab") === state.tab);
+      }
+      $(".lscd-panel-weekly").hidden = !weekly;
+      $(".lscd-panel-year").hidden = weekly;
+      if (!weekly) renderMonthGrid();
+      return;
+    }
+    if (b.hasAttribute("data-day")){
+      state.day = b.getAttribute("data-day");
+      renderRail(); renderDay();
+      return;
+    }
+    if (b.classList.contains("lscd-nav-prev") && state.monthIdx > 0){
+      state.monthIdx--; renderMonthGrid(); return;
+    }
+    if (b.classList.contains("lscd-nav-next") && state.monthIdx < SEASON_MONTHS.length - 1){
+      state.monthIdx++; renderMonthGrid(); return;
+    }
+  });
+
+  /* ---------------- boot ---------------- */
+  $(".lscd-season-num").textContent = SEASON.number;
+  $(".lscd-season-motto").innerHTML =
+    '<em>' + esc(SEASON.name) + '</em> &nbsp;—&nbsp; “' + esc(SEASON.motto) + '”';
+
+  renderAll();       /* paint immediately from the built-in data */
+  loadFromSheet();   /* then quietly swap in the live sheet, if it loads */
+})();
+</script>
