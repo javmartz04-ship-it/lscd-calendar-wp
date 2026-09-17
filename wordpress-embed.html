@@ -108,30 +108,16 @@
     text-transform:uppercase;
     color:var(--lscd-ink);
   }
-  #lscd-calendar .cal-season{
-    text-align:right;
-    flex-shrink:0;
-    padding-bottom:6px;
-  }
-  #lscd-calendar .cal-season-label{
-    font-size:10.5px;
-    font-weight:600;
-    letter-spacing:.22em;
-    text-transform:uppercase;
+  #lscd-calendar .disclaimer{
+    margin-top:10px;
+    font-size:12.5px;
     color:var(--lscd-muted);
   }
-  #lscd-calendar .cal-season-motto{
-    font-size:13px;
-    font-weight:600;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    color:var(--lscd-ink);
-    margin-top:4px;
+  #lscd-calendar .disclaimer a{
+    color:var(--lscd-ink); font-weight:600; text-decoration:none;
+    border-bottom:1px solid var(--lscd-line);
   }
-  #lscd-calendar .cal-season-motto em{
-    font-style:normal;
-    color:var(--lscd-blue-deep);
-  }
+  #lscd-calendar .disclaimer a:hover{ color:var(--lscd-blue-deep); border-bottom-color:var(--lscd-blue); }
 
   /* ------------------------------------------------------------- main tabs */
   #lscd-calendar .cal-tabs{
@@ -643,24 +629,18 @@
   /* --------------------------------------------------------------- footer */
   #lscd-calendar .cal-foot{
     margin-top:56px;
-    padding-top:22px;
+    padding-top:26px;
     border-top:1px solid var(--lscd-line);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
-    flex-wrap:wrap;
-  }
-  #lscd-calendar .cal-foot p{
-    font-size:11px;
-    letter-spacing:.06em;
+    text-align:center;
+    font-size:12.5px;
+    letter-spacing:.04em;
     color:var(--lscd-muted);
   }
-  #lscd-calendar .cal-foot .foot-script{
-    font-family:var(--lscd-script);
-    font-size:24px;
-    color:var(--lscd-faint);
+  #lscd-calendar .cal-foot a{
+    color:var(--lscd-ink); font-weight:600; text-decoration:none;
+    border-bottom:1px solid var(--lscd-line);
   }
+  #lscd-calendar .cal-foot a:hover{ color:var(--lscd-blue-deep); border-bottom-color:var(--lscd-blue); }
 
   /* ------------------------------------------------------------ responsive */
   @media (max-width: 860px){
@@ -707,10 +687,6 @@
       <div class="cal-head-script">Laredo School of Contemporary Dance</div>
       <h1 class="cal-title">2026–2027 Class Calendar</h1>
     </div>
-    <div class="cal-season">
-      <div class="cal-season-label">Season <span class="lscd-season-num"></span></div>
-      <div class="cal-season-motto lscd-season-motto"></div>
-    </div>
   </header>
 
   <div class="cal-tabs" role="tablist" aria-label="Calendar views">
@@ -724,6 +700,7 @@
     <div class="section-head">
       <div class="section-kicker">Every Studio · Every Day</div>
       <h2>This Week At A Glance</h2>
+      <p class="disclaimer">Schedule subject to change &nbsp;·&nbsp; Questions? Call <a href="tel:+19562201532">(956)&nbsp;220-1532</a></p>
     </div>
     <div class="lscd-glance-body"></div>
 
@@ -758,10 +735,7 @@
     <div class="lscd-year-body"></div>
   </section>
 
-  <footer class="cal-foot">
-    <p>SCHEDULE SUBJECT TO CHANGE &nbsp;·&nbsp; QUESTIONS? CALL <strong>(956)&nbsp;220-1532</strong></p>
-    <span class="foot-script">Dance with Us. Grow with Us.</span>
-  </footer>
+  <p class="cal-foot">Schedule subject to change &nbsp;·&nbsp; Questions? Call <a href="tel:+19562201532">(956)&nbsp;220-1532</a></p>
 
 </div>
 
@@ -785,8 +759,6 @@
   var SHEET_ID    = "PASTE_SHEET_ID_HERE";
   var CLASSES_TAB = "Classes";
   var EVENTS_TAB  = "Events";
-
-  var SEASON = { number: 16, name: "RISE", motto: "Rise Higher. Rise Together." };
 
   /* ======================================================================
      BUILT-IN SCHEDULE (safety net)
@@ -1442,10 +1414,6 @@
   });
 
   /* ---------------- boot ---------------- */
-  $(".lscd-season-num").textContent = SEASON.number;
-  $(".lscd-season-motto").innerHTML =
-    '<em>' + esc(SEASON.name) + '</em> &nbsp;—&nbsp; “' + esc(SEASON.motto) + '”';
-
   renderAll();       /* paint immediately from the built-in data */
   loadFromSheet();   /* then quietly swap in the live sheet, if it loads */
 })();
