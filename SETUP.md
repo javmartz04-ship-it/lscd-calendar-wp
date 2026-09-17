@@ -45,6 +45,14 @@ just editing a spreadsheet.
 
 ## Part 2 — Put it on the WordPress page (one time)
 
+**First, the font.** The calendar's script heading uses the studio's licensed
+Brush Script Std webfont. Upload the two files in `fonts/brush-script-std/`
+(`BrushScriptStdItalic.woff2` and `.woff`) to the site's server in a folder
+named `wp-content/uploads/lscd-fonts/` (via Hostinger's File Manager — the
+WordPress Media Library blocks font files). Until that's done the calendar
+borrows a temporary preview copy, so nothing breaks either way.
+
+
 1. Open `wordpress-embed.html` in any text editor. Near the bottom, find:
 
    ```js

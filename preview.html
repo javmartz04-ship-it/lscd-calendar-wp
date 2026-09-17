@@ -19,9 +19,22 @@
      interfere with the rest of the website.
      ========================================================================== -->
 
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Hurricane&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 
 <style>
+  /* Brush Script Std Italic by Monotype — the studio's licensed MyFonts
+     webfont (MyFonts Webfont Build ID 3867246). Licensed to the website owner.
+     FONT FILES: upload the two files from fonts/brush-script-std/ to the
+     WordPress site and put their address on the first src line below. The
+     second line is a temporary preview copy; it's only used if the first
+     can't be found. See SETUP.md. */
+  @font-face{
+    font-family:"BrushScriptStdItalic";
+    src:url("/wp-content/uploads/lscd-fonts/BrushScriptStdItalic.woff2") format("woff2"),
+        url("https://javmartz04-ship-it.github.io/lscd-calendar-wp/fonts/brush-script-std/BrushScriptStdItalic.woff2") format("woff2"),
+        url("https://javmartz04-ship-it.github.io/lscd-calendar-wp/fonts/brush-script-std/BrushScriptStdItalic.woff") format("woff");
+    font-display:swap;
+  }
   #lscd-calendar{
     --lscd-blue:        #49C6FF;
     --lscd-blue-deep:   #21AEEF;
@@ -38,7 +51,7 @@
     --lscd-closed-wash: #FBF1EF;
     --lscd-oswald: 'Oswald', 'Arial Narrow', sans-serif;
     --lscd-mont:   'Montserrat', 'Helvetica Neue', Arial, sans-serif;
-    --lscd-script: 'Hurricane', 'Snell Roundhand', cursive;
+    --lscd-script: 'BrushScriptStdItalic', 'Brush Script MT', cursive;
 
     max-width:1400px;
     margin:0 auto;
@@ -90,7 +103,7 @@
   }
   #lscd-calendar .cal-head-script{
     font-family:var(--lscd-script);
-    font-size:38px;
+    font-size:32px;
     line-height:1;
     color:var(--lscd-blue);
     margin-bottom:10px;
@@ -431,7 +444,7 @@
   }
   #lscd-calendar .empty-day .script{
     font-family:var(--lscd-script);
-    font-size:42px;
+    font-size:35px;
     color:var(--lscd-faint);
     display:block;
     margin-bottom:6px;
@@ -654,7 +667,7 @@
   }
   #lscd-calendar .cal-foot .foot-script{
     font-family:var(--lscd-script);
-    font-size:29px;
+    font-size:24px;
     color:var(--lscd-faint);
   }
 
@@ -668,7 +681,7 @@
   }
   @media (max-width: 620px){
     #lscd-calendar{ padding:28px 14px 40px; }
-    #lscd-calendar .cal-head-script{ font-size:32px; }
+    #lscd-calendar .cal-head-script{ font-size:27px; }
     #lscd-calendar .class-row{
       grid-template-columns:1fr;
       gap:6px;
