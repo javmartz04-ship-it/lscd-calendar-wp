@@ -98,3 +98,19 @@ hostile-environment code: scope every selector, namespace the variables, and
 prove it with a test page that wraps the snippet in a deliberately aggressive
 fake theme. The fake-theme harness found a real style leak that reading the CSS
 would not have.
+
+## Studio review — 2026-09-02 (Loom, ~27:00–30:05)
+
+Jess on the calendar: *"Yeah, I love it. I think it's very clean."* Two changes, nothing else:
+
+1. **Script header matches the site.** *"Where it says Laredo school, if we can just keep the font consistent, and it's a brush script."* Great Vibes → **Hurricane** (the live site's script face), sizes bumped ~25% because Hurricane runs smaller.
+2. **Class names shouldn't wrap like they're cut off.** *"Where it says grade three to four and pointe 3/4, like the 3/4 is not on Monday… it doesn't look like it has a second line, like it's incomplete. Will we be able to expand the columns?"* The very long Thursday class is fine to wrap: *"at least it reads like two classes."*
+   - Container 1180 → 1400px, side gutter 40 → 24px at ≤1440px.
+   - Each day column is **measured from its longest class name** (table-layout fixed + generated `<colgroup>`), not split evenly — Friday doesn't need Wednesday's width. A name over 230px is left out of the measurement and allowed to wrap, so "Preparatory Grade 2 / Grade 1 & Pointe 1" doesn't make Thursday huge and squeeze every other day.
+   - Measured live, so it keeps working when class names change in the Sheet.
+   - Result: at 1366px and wider only the Thursday class wraps. At 1280 some still wrap — there isn't enough physical width at that size.
+   - On phones (≤860px) the table gets its full natural width, since it already scrolls sideways there.
+
+**Scope flag, not built:** in the call Josh described the update flow as *"you export the PDF… I give you a little form, you upload it, hit submit, and it will auto update."* That's a PDF upload, not the Google Sheet Javier chose. Worth reconciling with Josh before the studio gets instructions.
+
+**Heads-up for WordPress:** Elementor's default content width is 1140px. The embed needs a full-width section, or the wider columns get squeezed back.
