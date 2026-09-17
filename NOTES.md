@@ -123,3 +123,9 @@ After the review, Javier sent the studio's own MyFonts webfont kit: **Brush Scri
 - All script sizes are about 16% smaller, because Brush Script Std sets wider than Hurricane at the same px. The line widths and layout stay the same.
 - Licensing: the kit is licensed to the website owner (the studio). It's hosted in the public preview repos for now; long-term it belongs on their own server only.
 - WordPress embed: the `@font-face` tries `/wp-content/uploads/lscd-fonts/` first, then the GitHub preview copy. Browsers fall through the `src` list on a 404; this was verified in the test run. SETUP.md now has an upload-the-font step.
+
+## Second Loom review — 2026-09-17
+
+Content changes mirrored from the standalone calendar: season line removed (and the `SEASON` constant with it), the "schedule subject to change · questions? call" line added under *This Week At A Glance* and centred above the closing rule, and "Dance with Us. Grow with Us." removed.
+
+**Deliberately not mirrored: the black logo bar and the site footer.** This file is the *embed* — it sits inside the WordPress page, which already renders the site's real header and footer. Adding its own would double them up. The standalone page at `builds/lscd-calendar-simple` is the one that carries the chrome.
