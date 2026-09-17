@@ -114,3 +114,12 @@ Jess on the calendar: *"Yeah, I love it. I think it's very clean."* Two changes,
 **Scope flag, not built:** in the call Josh described the update flow as *"you export the PDF… I give you a little form, you upload it, hit submit, and it will auto update."* That's a PDF upload, not the Google Sheet Javier chose. Worth reconciling with Josh before the studio gets instructions.
 
 **Heads-up for WordPress:** Elementor's default content width is 1140px. The embed needs a full-width section, or the wider columns get squeezed back.
+
+## Font follow-up — 2026-09-17
+
+After the review, Javier sent the studio's own MyFonts webfont kit: **Brush Script Std Italic** (Monotype, MyFonts build 3867246). That's the "brush script" Jess meant. The first pass had used Hurricane (the live site's script), which is thin and elegant; Brush Script Std is much heavier and matches the lettering in their logo. Shown side by side, Javier chose Brush Script.
+
+- Font files are in `fonts/brush-script-std/`, loaded with `@font-face`. The fallback is `'Brush Script MT'`, the system version on Mac and Windows.
+- All script sizes are about 16% smaller, because Brush Script Std sets wider than Hurricane at the same px. The line widths and layout stay the same.
+- Licensing: the kit is licensed to the website owner (the studio). It's hosted in the public preview repos for now; long-term it belongs on their own server only.
+- WordPress embed: the `@font-face` tries `/wp-content/uploads/lscd-fonts/` first, then the GitHub preview copy. Browsers fall through the `src` list on a 404; this was verified in the test run. SETUP.md now has an upload-the-font step.
