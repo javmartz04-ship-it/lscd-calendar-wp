@@ -10,7 +10,7 @@
      interfere with the rest of the website.
      ========================================================================== -->
 
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Hurricane&display=swap" rel="stylesheet">
 
 <style>
   #lscd-calendar{
@@ -29,9 +29,9 @@
     --lscd-closed-wash: #FBF1EF;
     --lscd-oswald: 'Oswald', 'Arial Narrow', sans-serif;
     --lscd-mont:   'Montserrat', 'Helvetica Neue', Arial, sans-serif;
-    --lscd-script: 'Great Vibes', cursive;
+    --lscd-script: 'Hurricane', 'Snell Roundhand', cursive;
 
-    max-width:1180px;
+    max-width:1400px;
     margin:0 auto;
     padding:48px 40px 64px;
     font-family:var(--lscd-mont);
@@ -40,6 +40,10 @@
     line-height:1.55;
     -webkit-font-smoothing:antialiased;
     text-align:left;
+  }
+  /* laptops: trade a little side gutter for class names that fit on one line */
+  @media (max-width: 1440px){
+    #lscd-calendar{ padding-left:24px; padding-right:24px; }
   }
   #lscd-calendar *{ margin:0; padding:0; box-sizing:border-box; }
   #lscd-calendar img{ max-width:100%; }
@@ -77,7 +81,7 @@
   }
   #lscd-calendar .cal-head-script{
     font-family:var(--lscd-script);
-    font-size:30px;
+    font-size:38px;
     line-height:1;
     color:var(--lscd-blue);
     margin-bottom:10px;
@@ -188,6 +192,7 @@
     width:100%;
     min-width:940px;
     border-collapse:collapse;
+    table-layout:fixed;
     border-spacing:0;
     background:var(--lscd-ground);
     font-size:inherit;
@@ -226,13 +231,12 @@
     border-top:1px solid var(--lscd-line);
   }
   #lscd-calendar .studio-table tbody td{
-    padding:14px 12px;
+    padding:14px 11px;
     vertical-align:top;
     background:var(--lscd-ground);
     border:none;
     border-top:1px solid var(--lscd-line);
     border-left:1px solid var(--lscd-line-soft);
-    min-width:140px;
     /* themes commonly style bare td/th — restate these so nothing leaks in */
     color:var(--lscd-ink);
     font-family:var(--lscd-mont);
@@ -418,7 +422,7 @@
   }
   #lscd-calendar .empty-day .script{
     font-family:var(--lscd-script);
-    font-size:34px;
+    font-size:42px;
     color:var(--lscd-faint);
     display:block;
     margin-bottom:6px;
@@ -641,7 +645,7 @@
   }
   #lscd-calendar .cal-foot .foot-script{
     font-family:var(--lscd-script);
-    font-size:23px;
+    font-size:29px;
     color:var(--lscd-faint);
   }
 
@@ -655,7 +659,7 @@
   }
   @media (max-width: 620px){
     #lscd-calendar{ padding:28px 14px 40px; }
-    #lscd-calendar .cal-head-script{ font-size:26px; }
+    #lscd-calendar .cal-head-script{ font-size:32px; }
     #lscd-calendar .class-row{
       grid-template-columns:1fr;
       gap:6px;
@@ -1189,6 +1193,64 @@
 
     html += '</tbody></table></div>';
     $(".lscd-glance-body").innerHTML = html;
+    sizeColumns();
+  }
+
+  /* Give each day column the width its longest class name needs, so names
+     read on one line instead of wrapping like they're cut off. A name wider
+     than NAME_CAP is left out of the measurement and allowed to wrap, rather
+     than making its whole day column wide and squeezing every other day.
+     Measured live, so it keeps working as class names change in the Sheet. */
+  var NAME_CAP = 230;
+  var CELL_PAD = 26;   /* the td's left + right padding, plus a hair of slack */
+  function sizeColumns(){
+    var table = root.querySelector(".lscd-glance-body .studio-table");
+    if (!table) return;
+    var probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;left:-9999px;top:0;";
+    table.parentNode.appendChild(probe);
+
+    var need = DAYS.map(function(){ return 110; });
+    var rows = table.tBodies[0].rows;
+    for (var r = 0; r < rows.length; r++){
+      for (var c = 1; c < rows[r].cells.length; c++){
+        var names = rows[r].cells[c].querySelectorAll(".se-name");
+        for (var n = 0; n < names.length; n++){
+          probe.className = "se-name";
+          probe.innerHTML = names[n].innerHTML;
+          var w = Math.ceil(probe.getBoundingClientRect().width);
+          if (w <= NAME_CAP) need[c - 1] = Math.max(need[c - 1], w + CELL_PAD);
+        }
+      }
+    }
+    probe.parentNode.removeChild(probe);
+
+    var old = table.querySelector("colgroup");
+    if (old) old.parentNode.removeChild(old);
+    var colgroup = document.createElement("colgroup");
+    var label = document.createElement("col");
+    label.style.width = "80px";
+    colgroup.appendChild(label);
+    var total = need.reduce(function(a, b){ return a + b; }, 0);
+    need.forEach(function(w){
+      var col = document.createElement("col");
+      col.style.width = (w / total * 100).toFixed(3) + "%";
+      colgroup.appendChild(col);
+    });
+    table.insertBefore(colgroup, table.firstChild);
+
+    /* Phones and tablets already scroll this table sideways, so there give it
+       its full natural width instead of squeezing names into narrow columns. */
+    var narrow = window.matchMedia && window.matchMedia("(max-width: 860px)").matches;
+    table.style.minWidth = narrow ? (80 + total) + "px" : "";
+  }
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ sizeColumns(); });
+  }
+  if (window.matchMedia){
+    var mq = window.matchMedia("(max-width: 860px)");
+    if (mq.addEventListener) mq.addEventListener("change", sizeColumns);
+    else if (mq.addListener) mq.addListener(sizeColumns);
   }
 
   /* ---------------- weekly: single day ---------------- */
