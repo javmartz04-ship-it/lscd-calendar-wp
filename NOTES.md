@@ -129,3 +129,9 @@ After the review, Javier sent the studio's own MyFonts webfont kit: **Brush Scri
 Content changes mirrored from the standalone calendar: season line removed (and the `SEASON` constant with it), the "schedule subject to change · questions? call" line added under *This Week At A Glance* and centred above the closing rule, and "Dance with Us. Grow with Us." removed.
 
 **Deliberately not mirrored: the black logo bar and the site footer.** This file is the *embed* — it sits inside the WordPress page, which already renders the site's real header and footer. Adding its own would double them up. The standalone page at `builds/lscd-calendar-simple` is the one that carries the chrome.
+
+## Paste-proofing round — 2026-09-23
+
+Same treatment as the two standalone pages (see `builds/lscd-calendar-simple/NOTES.md`): every non-ASCII character escaped so a stripped charset cannot produce mojibake, and the Brush Script webfont embedded as a data URI instead of loading from a path. This file was already scoped to `#lscd-calendar`, so it needed no host-CSS armour and gets no `ghl-paste.html` — it is already a paste block.
+
+Mobile form padding was a registration-page change; nothing here.
